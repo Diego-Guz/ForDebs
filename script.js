@@ -1,16 +1,15 @@
 (() => {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* =========================================================
-     PHOTOS: loads assets/photos/photo1.jpg (or .jpeg .png .webp)
-     ========================================================= */
   const EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'JPG', 'JPEG', 'PNG', 'heic', 'HEIC'];
   document.querySelectorAll('img[data-photo]').forEach(img => {
     const name = img.dataset.photo;
+    const tries = [];
+    ['photos/', 'assets/photos/'].forEach(dir => EXTENSIONS.forEach(ext => tries.push(`${dir}${name}.${ext}`)));
     let i = 0;
     const tryNext = () => {
-      if (i >= EXTENSIONS.length) return; // no file found: placeholder stays
-      img.src = `assets/photos/${name}.${EXTENSIONS[i++]}`;
+      if (i >= tries.length) return; // no file found: placeholder stays
+      img.src = tries[i++];
     };
     img.addEventListener('load', () => {
       img.classList.add('ok');
@@ -20,9 +19,6 @@
     tryNext();
   });
 
-  /* =========================================================
-     FILM GRAIN
-     ========================================================= */
   (() => {
     const c = document.createElement('canvas');
     c.width = c.height = 180;
@@ -37,9 +33,7 @@
     document.querySelector('.grain').style.backgroundImage = `url(${c.toDataURL()})`;
   })();
 
-  /* =========================================================
-     HYDRANGEAS
-     ========================================================= */
+
   const canvas = document.getElementById('garden');
   const ctx = canvas.getContext('2d');
   let W = 0, H = 0, dpr = 1;
@@ -135,35 +129,58 @@
     seed = 11;
     clusters = [];
     const phone = W < 640;
+    let back = 0;
     if (phone) {
       const R = Math.max(62, W * 0.2);
-      const xs = [0.04, 0.36, 0.68, 1.0];
-      xs.forEach((fx, i) => {
-        clusters.push(makeCluster(fx * W + (rand() - 0.5) * 18, H + R * 0.12 - rand() * R * 0.35, R * (0.9 + rand() * 0.2), 0));
+      // back row: a little higher and smaller, peeking over the front
+      [0.18, 0.5, 0.82].forEach(fx => {
+        clusters.push(makeCluster(fx * W + (rand() - 0.5) * 20, H - R * 0.55 - rand() * R * 0.25, R * (0.75 + rand() * 0.15), 0));
       });
-      // two peeking in from the sides, a bit higher
-      clusters.push(makeCluster(-R * 0.35, H * 0.62, R * 0.8, 0));
-      clusters.push(makeCluster(W + R * 0.35, H * 0.5, R * 0.8, 0));
+      // front row along the bottom edge
+      [0.02, 0.34, 0.66, 0.98].forEach(fx => {
+        clusters.push(makeCluster(fx * W + (rand() - 0.5) * 18, H + R * 0.12 - rand() * R * 0.3, R * (0.9 + rand() * 0.2), 0));
+      });
+      // climbing up both sides
+      [[0.74, 0.85], [0.46, 0.75], [0.2, 0.65]].forEach(([fy, s]) => {
+        clusters.push(makeCluster(-R * 0.4, H * fy, R * s, 0));
+        clusters.push(makeCluster(W + R * 0.4, H * (fy - 0.08), R * s, 0));
+      });
+      // tucked into the top corners
+      clusters.push(makeCluster(-R * 0.2, -R * 0.15, R * 0.7, 0));
+      clusters.push(makeCluster(W + R * 0.2, -R * 0.05, R * 0.65, 0));
     } else {
-      const n = Math.max(5, Math.round(W / 210));
+      // back row
+      back = Math.max(5, Math.round(W / 240));
+      for (let i = 0; i < back; i++) {
+        const R = 75 + rand() * 30;
+        clusters.push(makeCluster(((i + 0.25) / back) * W + (rand() - 0.5) * 50, H - R * 0.6 - rand() * R * 0.3, R, 0));
+      }
+      // front row
+      const n = Math.max(6, Math.round(W / 190));
       for (let i = 0; i < n; i++) {
         const R = 95 + rand() * 40;
         clusters.push(makeCluster(((i + 0.5) / n) * W + (rand() - 0.5) * 60, H + R * 0.1 - rand() * R * 0.4, R, 0));
       }
-      clusters.push(makeCluster(-30, H * 0.55, 105, 0));
-      clusters.push(makeCluster(W + 30, H * 0.42, 100, 0));
-      clusters.push(makeCluster(40, H * 0.18, 70, 0));
-      clusters.push(makeCluster(W - 40, H * 0.12, 66, 0));
+      // climbing up both sides
+      [[0.72, 110], [0.5, 100], [0.3, 88]].forEach(([fy, R]) => {
+        clusters.push(makeCluster(-25 + rand() * 30, H * fy, R, 0));
+        clusters.push(makeCluster(W + 25 - rand() * 30, H * (fy - 0.07), R, 0));
+      });
+      // top corners
+      clusters.push(makeCluster(30, H * 0.08, 78, 0));
+      clusters.push(makeCluster(W - 30, H * 0.05, 74, 0));
+      clusters.push(makeCluster(150, -20, 58, 0));
+      clusters.push(makeCluster(W - 160, -25, 56, 0));
     }
-    // Bloom order: two bottom ones open right away, the rest as she scrolls
+    // Bloom order: the front row opens right away, the rest as she scrolls
     const order = clusters.map((_, i) => i);
-    const first = [1, 2];
+    const first = phone ? [3, 4, 5, 6] : [back, back + 1, back + 2, back + 3, back + 4];
     const rest = order.filter(i => !first.includes(i)).sort(() => rand() - 0.5);
     first.forEach(i => { clusters[i].at = -1; });
     rest.forEach((ci, k) => { clusters[ci].at = 0.06 + (k / rest.length) * 0.78; });
 
     drifting = [];
-    const n = phone ? 7 : 12;
+    const n = phone ? 13 : 22;
     for (let i = 0; i < n; i++) {
       drifting.push({
         x: rand() * W, y: rand() * H,
@@ -294,9 +311,7 @@
   });
   requestAnimationFrame(frame);
 
-  /* =========================================================
-     PHOTOS SETTLE AS THEY COME INTO VIEW
-     ========================================================= */
+
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver(entries => {
       entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
@@ -306,16 +321,17 @@
     document.querySelectorAll('.polaroid').forEach(el => el.classList.add('in'));
   }
 
-  /* =========================================================
-     OPENING + MUSIC
-     ========================================================= */
+
   const gate = document.getElementById('gate');
   const toggle = document.getElementById('music-toggle');
   const song = new Audio();
   song.loop = true;
   song.preload = 'auto';
   song.setAttribute('playsinline', '');
-  song.src = 'assets/music/song.mp3';
+  song.src = 'music/song.mp3';
+  song.addEventListener('error', () => {
+    if (!song.src.includes('assets/')) song.src = 'assets/music/song.mp3';
+  }, { once: true });
   let mode = null;      // 'song' or 'box'
   let musicOn = false;
 
