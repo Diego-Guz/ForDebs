@@ -1,6 +1,9 @@
 (() => {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  /* =========================================================
+     PHOTOS: loads photos/photo1.jpg or assets/photos/photo1.jpg (.jpeg .png .webp also work)
+     ========================================================= */
   const EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'JPG', 'JPEG', 'PNG', 'heic', 'HEIC'];
   document.querySelectorAll('img[data-photo]').forEach(img => {
     const name = img.dataset.photo;
@@ -19,6 +22,9 @@
     tryNext();
   });
 
+  /* =========================================================
+     FILM GRAIN
+     ========================================================= */
   (() => {
     const c = document.createElement('canvas');
     c.width = c.height = 180;
@@ -33,7 +39,9 @@
     document.querySelector('.grain').style.backgroundImage = `url(${c.toDataURL()})`;
   })();
 
-
+  /* =========================================================
+     HYDRANGEAS
+     ========================================================= */
   const canvas = document.getElementById('garden');
   const ctx = canvas.getContext('2d');
   let W = 0, H = 0, dpr = 1;
@@ -311,7 +319,9 @@
   });
   requestAnimationFrame(frame);
 
-
+  /* =========================================================
+     PHOTOS SETTLE AS THEY COME INTO VIEW
+     ========================================================= */
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver(entries => {
       entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
@@ -321,7 +331,9 @@
     document.querySelectorAll('.polaroid').forEach(el => el.classList.add('in'));
   }
 
-
+  /* =========================================================
+     OPENING + MUSIC
+     ========================================================= */
   const gate = document.getElementById('gate');
   const toggle = document.getElementById('music-toggle');
   const song = new Audio();
@@ -372,12 +384,41 @@
     setTimeout(() => gate.setAttribute('hidden', ''), 1500);
   }
 
-  document.getElementById('open-music').addEventListener('click', () => openPage(true));
-  document.getElementById('open-quiet').addEventListener('click', () => openPage(false));
-  toggle.addEventListener('click', () => (musicOn ? stopMusic() : startMusic()));
-  document.getElementById('again').addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+  // Buttons are optional: if one is removed from index.html, it's simply skipped
+  const on = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
+  on('open-music', () => openPage(true));
+  on('open-quiet', () => openPage(false));
+  on('music-toggle', () => (musicOn ? stopMusic() : startMusic()));
+  // Glide back up past all the photos. Done by hand so it works the same on iPhone Safari.
+  let rewinding = false;
+  on('again', () => {
+    if (rewinding) return;
+    const scroller = document.scrollingElement || document.documentElement;
+    const from = window.scrollY || scroller.scrollTop || document.body.scrollTop || 0;
+    const setY = y => {
+      window.scrollTo(0, y);
+      scroller.scrollTop = y;
+      document.body.scrollTop = y;
+    };
+    if (reduceMotion || from < 2) { setY(0); return; }
+    rewinding = true;
+    const html = document.documentElement;
+    const prev = html.style.scrollBehavior;
+    html.style.scrollBehavior = 'auto'; // CSS smooth scrolling would fight the animation
+    const duration = Math.min(4200, 1400 + from * 0.35);
+    const t0 = performance.now();
+    const easeInOut = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    const stepUp = now => {
+      const k = Math.min(1, (now - t0) / duration);
+      setY(Math.round(from * (1 - easeInOut(k))));
+      if (k < 1 && rewinding) requestAnimationFrame(stepUp);
+      else if (!rewinding) { html.style.scrollBehavior = prev; }
+      else { setY(0); html.style.scrollBehavior = prev; rewinding = false; }
+    };
+    requestAnimationFrame(stepUp);
   });
+  // If she touches the screen mid-glide, let her take over
+  ['touchstart', 'wheel'].forEach(ev => window.addEventListener(ev, () => { rewinding = false; }, { passive: true }));
 
   // Pause when she switches apps, pick back up when she returns
   document.addEventListener('visibilitychange', () => {
