@@ -157,7 +157,7 @@ main {
   letter-spacing: -0.015em;
   margin: 0;
 }
-.dot { color: var(--blush); }
+.dot { color: var(--black); }
 .soft { color: var(--soft); font-style: italic; margin: 0; }
 
 .hero {
