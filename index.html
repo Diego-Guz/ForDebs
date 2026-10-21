@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#eef0e8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <!-- EDIT: this is what shows in the browser tab and in the iMessage link preview -->
+  <title>For you</title>
+  <meta property="og:title" content="I made you something">
+  <meta property="og:description" content="Take your time with this one.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=DM+Serif+Display:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&family=Share+Tech+Mono&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- The hydrangeas are drawn here -->
+  <canvas id="garden" aria-hidden="true"></canvas>
+  <div class="leak" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- ============ OPENING SCREEN (needed so music can start on iPhone) ============ -->
+  <div id="gate" class="gate" role="dialog" aria-labelledby="gate-title">
+    <div class="gate-inner">
+      <!-- EDIT: her name -->
+      <p class="hand">for [Her name]</p>
+      <h1 id="gate-title" class="gate-title">I made you something.</h1>
+      <p class="gate-note">Turn your sound on and scroll slowly.</p>
+      <button id="open-music" class="open-btn" type="button">Open it&nbsp;&nbsp;♪</button>
+      <button id="open-quiet" class="quiet-btn" type="button">open without music</button>
+    </div>
+  </div>
+
+  <main id="page">
+
+    <!-- ============ HERO ============ -->
+    <section class="hero">
+      <p class="hand">for [Her name]</p>
+      <h2 class="big">Thank you<span class="dot">.</span></h2>
+      <div class="hint">
+        scroll slowly
+        <svg viewBox="0 0 14 22" aria-hidden="true"><path d="M7 1v19M1 14l6 6 6-6"/></svg>
+      </div>
+    </section>
+
+    <!-- ============ MOMENT 1 ============
+         Photo file: assets/photos/photo1.jpg  (png / jpeg / webp also work) -->
+    <section class="moment">
+      <p class="hand note">remember this?</p>
+      <figure class="polaroid">
+        <div class="slot">
+          <img data-photo="photo1" alt="">
+          <span class="empty-label">photo 1</span>
+          <!-- EDIT: the date stamp, like an old film camera. Delete the line if you don't want it. -->
+          <span class="stamp">'25 06 14</span>
+        </div>
+        <figcaption>[caption]</figcaption>
+      </figure>
+      <div class="words">
+        <p>After we broke up, I carried a lot of heavy feelings for a long time. Lately I've been doing a lot of reflecting, and I've realized it's just as important to look at the beautiful things you brought into my life.</p>
+      </div>
+    </section>
+
+    <!-- ============ MOMENT 2 ============
+         Photo file: assets/photos/photo2.jpg -->
+    <section class="moment">
+      <p class="hand note">one of my favorites</p>
+      <figure class="polaroid">
+        <div class="slot">
+          <img data-photo="photo2" alt="">
+          <span class="empty-label">photo 2</span>
+          <span class="stamp">'25 08 02</span>
+        </div>
+        <figcaption>[caption]</figcaption>
+      </figure>
+      <div class="words">
+        <p class="lead">The year I spent next to you was the <em>happiest</em> of my life.</p>
+        <p>The connection we had was so special to me, and I don't think that will ever stop being true.</p>
+      </div>
+    </section>
+
+    <!-- ============ MOMENT 3 ============
+         Photo file: assets/photos/photo3.jpg -->
+    <section class="moment">
+      <p class="hand note">I still smile at this one</p>
+      <figure class="polaroid">
+        <div class="slot">
+          <img data-photo="photo3" alt="">
+          <span class="empty-label">photo 3</span>
+          <span class="stamp">'25 11 21</span>
+        </div>
+        <figcaption>[caption]</figcaption>
+      </figure>
+      <div class="words">
+        <p>I've accepted that we broke up, and I'm not asking for anything to change. I just didn't want this chapter to close without you knowing how grateful I am that you came into my life.</p>
+      </div>
+    </section>
+
+    <!-- ============ MOMENT 4 ============
+         Photo file: assets/photos/photo4.jpg -->
+    <section class="moment">
+      <p class="hand note">us</p>
+      <figure class="polaroid">
+        <div class="slot">
+          <img data-photo="photo4" alt="">
+          <span class="empty-label">photo 4</span>
+          <span class="stamp">'26 02 14</span>
+        </div>
+        <figcaption>[caption]</figcaption>
+      </figure>
+      <div class="words">
+        <p class="lead">Thank you for letting me love you, and for loving me back.</p>
+        <!-- EDIT: add a memory only the two of you would know -->
+        <p>For every memory, and for all the parts of it that don't fit into words. [A memory only the two of you would know.]</p>
+      </div>
+    </section>
+
+    <!-- ============ ENDING ============ -->
+    <section class="finale">
+      <h2 class="big">Thank you<span class="dot">.</span></h2>
+      <p class="soft">I hope life is gentle with you.</p>
+      <!-- EDIT: your name -->
+      <p class="hand sign">[Your name]</p>
+      <button id="again" class="quiet-btn" type="button">back to the beginning</button>
+    </section>
+  </main>
+
+  <!-- Music on / off -->
+  <button id="music-toggle" class="music-toggle" type="button" aria-label="Turn music off" hidden>
+    <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>
+  </button>
+
+  <script src="music.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
